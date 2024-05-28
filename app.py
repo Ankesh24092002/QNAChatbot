@@ -198,7 +198,7 @@ def perform_query_chat(message_history):
 
 @app.route('/')
 def index():
-    return render_template('newfinal.html', uploaded_files=session.get('uploaded_files', []))
+    return render_template('chatgpt.html', uploaded_files=session.get('uploaded_files', []))
 
 message_history = []
 
@@ -278,23 +278,12 @@ def chatbot():
             except exceptions.CosmosHttpResponseError as e:
                 return jsonify({"response": "Failed to store the response in Cosmos DB!"})
 
-            if session.get('table_name'):
-                db = AstraDB(
-                    token=os.getenv('ASTRA_DB_APPLICATION_TOKEN'),
-                    api_endpoint=os.getenv('ASTRA_DB_API_ENDPOINT'),
-                )
-                table_name = session.get('table_name')
-                db.delete_collection(collection_name=table_name)
-                session['table_name'] = None
-
             return jsonify({"response": response.choices[0].message.content})
         else:
             return jsonify({"response": "Please upload a file to start the conversation!"})
     return jsonify({"response": "Please provide a message!"})
 
-
-
-@app.route('/deleteCollection', methods=['GET'])
+@app.route('/deleteCollection', methods=['POST'])
 def deleteCollection():
     if session.get('table_name'):
         db = AstraDB(
@@ -304,11 +293,11 @@ def deleteCollection():
         table_name = session.get('table_name')
         db.delete_collection(collection_name=table_name)
         session['table_name'] = None
+        session.pop('uploaded_files', None)
+        session.pop('texts', None)
+        session.pop('prompt_template', None)
         return "Collection deleted successfully!"
     return "No collection to delete."
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-
