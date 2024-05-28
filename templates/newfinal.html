@@ -145,6 +145,17 @@
             color: white;
             display: none;
         }
+        .delete-button {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .delete-button:hover {
+            background-color: #555;
+        }
     </style>
 </head>
 <body>
@@ -169,6 +180,8 @@
                 <input type="submit" value="Upload">
                 <p id="loadingMessage">Please wait, your file is processing...</p>
                 <div id="sidebarResponseContainer"></div>
+                <button type="button" class="delete-button" onclick="deleteCollection()">Delete Collection</button>
+                <p id="deleteMessage" style="display: none;">Collection deleted successfully</p>
             </form>
         </div>
     </div>
@@ -179,7 +192,7 @@
             <form id="chatForm" action="/chat" method="post">
                 <label for="user_message">Ask a question</label>
                 <input type="text" id="user_message" name="user_message" placeholder="generate 10 questions">
-                <input type="submit" value="Submit" onclick="showGeneratingQuestionsMessage()"> <!-- Update this line -->
+                <input type="submit" value="Submit" onclick="showGeneratingQuestionsMessage()">
             </form>
             <p id="generatingQuestionsMessage">Please wait, we are generating questions...</p>
             <div id="responseContainer"></div>
@@ -190,6 +203,21 @@
         function showGeneratingQuestionsMessage() {
             const generatingQuestionsMessage = document.getElementById('generatingQuestionsMessage');
             generatingQuestionsMessage.style.display = 'block'; // Show generating questions message
+        }
+
+        async function deleteCollection() {
+            try {
+                const response = await fetch('/deleteCollection', {
+                    method: 'POST',
+                });
+                const result = await response.text();
+                const deleteMessage = document.getElementById('deleteMessage');
+                deleteMessage.textContent = result;
+                deleteMessage.style.display = 'block'; // Display the delete message
+            } catch (error) {
+                console.error('Error deleting collection:', error);
+                alert('There was an error deleting the collection. Please try again.');
+            }
         }
 
         document.getElementById('uploadForm').onsubmit = async function(event) {
